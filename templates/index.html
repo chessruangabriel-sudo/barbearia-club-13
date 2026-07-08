@@ -114,27 +114,21 @@
         </div>
     </div>
 </div>
-
 <script>
-    // Detectar si estamos en producción o desarrollo
-    const API_URL = window.location.origin; // Usa la URL actual del navegador
     const inputData = document.getElementById('data');
     const selectHora = document.getElementById('hora');
     const form = document.getElementById('agendamentoForm');
     const msgDiv = document.getElementById('mensagem');
     const btnSubmit = form.querySelector('button[type="submit"]');
 
-    // Configurar data mínima (hoje)
     const hoje = new Date().toISOString().split('T')[0];
     inputData.setAttribute('min', hoje);
 
-    // Função para gerar horários válidos
     function gerarHorarios() {
         selectHora.innerHTML = '<option value="" selected>-- Selecione --</option>';
         const dataSelecionada = new Date(inputData.value + 'T00:00:00');
-        const diaSemana = dataSelecionada.getDay(); // 0 = Domingo
+        const diaSemana = dataSelecionada.getDay();
 
-        // Bloquear Domingos
         if (diaSemana === 0) {
             const opcao = document.createElement('option');
             opcao.text = "Domingo: Barbearia Fechada";
@@ -144,7 +138,6 @@
             return;
         }
 
-        // Verificar Janela de 7 Dias
         const hojeObj = new Date();
         hojeObj.setHours(0,0,0,0);
         const dataObj = new Date(inputData.value + 'T00:00:00');
@@ -166,14 +159,12 @@
 
         selectHora.disabled = false;
 
-        // Gerar horários de 08:00 a 20:30
         for (let h = 8; h < 21; h++) {
             const minutos = [0, 30];
             minutos.forEach(m => {
                 const horaFormatada = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
                 const horaFloat = h + (m / 60);
 
-                // Pular Almoço (11:30 a 12:30)
                 if (horaFloat >= 11.5 && horaFloat <= 12.5) return;
 
                 const opcao = document.createElement('option');
@@ -184,26 +175,11 @@
         }
     }
 
-    // Evento de mudança na data
     inputData.addEventListener('change', gerarHorarios);
 
-    // Evento de Submit
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Validação final de segurança no frontend
-        const dataSelecionada = new Date(inputData.value + 'T00:00:00');
-        const hojeObj = new Date();
-        hojeObj.setHours(0,0,0,0);
-        const diffTime = Math.abs(dataSelecionada - hojeObj);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays > 7) {
-            msgDiv.textContent = "⚠️ Erro: Data excede a janela de 7 dias.";
-            msgDiv.className = "mt-2 text-center fw-bold text-danger";
-            return;
-        }
-
         btnSubmit.disabled = true;
         btnSubmit.textContent = "Processando...";
         msgDiv.textContent = "";
@@ -217,7 +193,7 @@
         };
 
         try {
-           const resposta = await fetch(API_URL + '/agendar', {
+            const resposta = await fetch('/agendar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
@@ -244,7 +220,4 @@
             btnSubmit.textContent = "Confirmar Agendamento";
         }
     });
-</script>
-
-</body>
-</html>
+</script> 
