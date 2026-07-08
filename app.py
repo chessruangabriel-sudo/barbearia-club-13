@@ -236,7 +236,4 @@ def agenda_barbeiro(barbeiro):
 if __name__ == '__main__':
     init_db()
     print(f"🚀 {BARBEARIA_NOME} v2.0 Iniciado!")
-    print(f"   Agendamento: http://127.0.0.1:5000")
-    print(f"   Agenda Fábio: http://127.0.0.1:5000/agenda/fabio")
-    print(f"   Agenda Pedro: http://127.0.0.1:5000/agenda/pedro")
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
