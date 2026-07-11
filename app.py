@@ -3,11 +3,8 @@ import sqlite3
 import smtplib
 from datetime import datetime
 from email.mime.text import MIMEText
-from email.header import Header
-from flask import Flask, request, jsonify, send_from_directory
-from dotenv import load_dotenv
-
-load_dotenv()
+from email.mime.multipart import MIMEMultipart
+from flask import Flask, request, jsonify, send_from_directory, render_template
 
 app = Flask(__name__)
 DB_NAME = "barbearia.db"
@@ -17,60 +14,75 @@ JANELA_DIAS = 7
 HORARIO_ABERTURA = 8
 HORARIO_FECHAMENTO = 21
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("barbeariaclub298@gmail.com")
-SMTP_PASS = os.environ.get("nfek xjft pnen ldfh")
-
-BARBEIROS = {1: "Fabio Farias", 2: "Pedro Lima"}
-
+# ==========================================================
+# CONFIGURAÇÃO DE E-MAIL (fixo + senha no Render)
+# ==========================================================
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = "barbeariaclub298@gmail.com"
+SMTP_PASS = os.environ.get("SMTP_PASS")  # coloque no Render
 
 def init_db():
     if not os.path.exists(DB_NAME):
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute('CREATE TABLE barbeiros (id INTEGER PRIMARY KEY, nome TEXT)')
-        c.execute('CREATE TABLE reservas (id INTEGER PRIMARY KEY, barbeiro_id INTEGER, data TEXT, hora TEXT, nome_cliente TEXT, email_cliente TEXT)')
+        c.execute('''CREATE TABLE reservas (
+            id INTEGER PRIMARY KEY,
+            barbeiro_id INTEGER,
+            data TEXT,
+            hora TEXT,
+            nome_cliente TEXT,
+            email_cliente TEXT
+        )''')
         c.execute("INSERT INTO barbeiros VALUES (1, 'Fabio Farias')")
         c.execute("INSERT INTO barbeiros VALUES (2, 'Pedro Lima')")
         conn.commit()
         conn.close()
+        print("✅ Banco criado")
 
+def enviar_email(destinatario, cliente, data, hora, barbeiro):
+    if not SMTP_PASS:
+        print("⚠️ SMTP_PASS não configurado. Email NÃO enviado.")
+        return False
+    try:
+        msg = MIMEMultipart()
+        msg["From"] = f"{BARBEARIA_NOME} <{SMTP_USER}>"
+        msg["To"] = destinatario
+        msg["Subject"] = "✂️ Confirmação do seu corte - Barbearia Club 13"
 
-# Chamado no nível do módulo: gunicorn importa "app:app" e nunca executa o
-# bloco "if __name__ == '__main__'", então init_db() precisa rodar aqui fora,
-# senão as tabelas nunca são criadas em produção.
-init_db()
+        corpo = f"""
+        <html>
+        <body style="font-family:Arial; color:#2c3e50;">
+            <h2>✂️ Barbearia Club 13</h2>
+            <p>Olá <strong>{cliente}</strong>, seu horário foi confirmado!</p>
+            <ul>
+                <li><strong>📅 Data:</strong> {data}</li>
+                <li><strong>🕐 Hora:</strong> {hora}</li>
+                <li><strong>💈 Barbeiro:</strong> {barbeiro}</li>
+            </ul>
+            <p>Nos vemos na barbearia! 😎</p>
+            <hr>
+            <small>Barbearia Club 13 - Sistema v2.1</small>
+        </body>
+        </html>
+        """
+        msg.attach(MIMEText(corpo, "html"))
 
-
-def enviar_email_confirmacao(destinatario, cliente, data_corte, hora_corte, barbeiro_nome):
-    """Envia e-mail de confirmação via SMTP+STARTTLS. Lança exceção se falhar (tratado pelo caller)."""
-    if not SMTP_USER or not SMTP_PASS:
-        raise RuntimeError("SMTP_USER/SMTP_PASS ausentes nas variáveis de ambiente")
-
-    corpo = (
-        f"Olá {cliente},\n\n"
-        f"Seu agendamento na {BARBEARIA_NOME} está confirmado:\n\n"
-        f"Barbeiro: {barbeiro_nome}\n"
-        f"Data: {data_corte}\n"
-        f"Horário: {hora_corte}\n\n"
-        f"Até breve!"
-    )
-    msg = MIMEText(corpo, _charset="utf-8")
-    msg["Subject"] = Header(f"Confirmação de Agendamento - {BARBEARIA_NOME}", "utf-8")
-    msg["From"] = SMTP_USER
-    msg["To"] = destinatario
-
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
-        server.sendmail(SMTP_USER, [destinatario], msg.as_string())
-
+        server.send_message(msg)
+        server.quit()
+        print(f"✅ Email enviado para {destinatario}")
+        return True
+    except Exception as e:
+        print(f"❌ Erro ao enviar email: {e}")
+        return False
 
 @app.route('/')
 def home():
     return send_from_directory('templates', 'index.html')
-
 
 @app.route('/agendar', methods=['POST'])
 def agendar():
@@ -81,9 +93,6 @@ def agendar():
         hora_corte = data['hora']
         cliente = data['cliente']
         email = data['email']
-
-        if barbeiro_id not in BARBEIROS:
-            return jsonify({"erro": "Barbeiro inválido"}), 400
 
         hoje = datetime.now().date()
         data_obj = datetime.strptime(data_corte, "%Y-%m-%d").date()
@@ -108,31 +117,27 @@ def agendar():
 
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute(
-            'SELECT id FROM reservas WHERE barbeiro_id = ? AND data = ? AND hora = ?',
-            (barbeiro_id, data_corte, hora_corte)
-        )
+        c.execute('SELECT id FROM reservas WHERE barbeiro_id = ? AND data = ? AND hora = ?',
+                  (barbeiro_id, data_corte, hora_corte))
         if c.fetchone():
             conn.close()
             return jsonify({"erro": "Horario no disponible"}), 400
 
-        c.execute(
-            'INSERT INTO reservas (barbeiro_id, data, hora, nome_cliente, email_cliente) VALUES (?, ?, ?, ?, ?)',
-            (barbeiro_id, data_corte, hora_corte, cliente, email)
-        )
+        c.execute('INSERT INTO reservas (barbeiro_id, data, hora, nome_cliente, email_cliente) VALUES (?, ?, ?, ?, ?)',
+                  (barbeiro_id, data_corte, hora_corte, cliente, email))
         conn.commit()
         conn.close()
 
-        try:
-            enviar_email_confirmacao(email, cliente, data_corte, hora_corte, BARBEIROS[barbeiro_id])
-            return jsonify({"sucesso": f"Agendado! Confirmacion enviada a {email}"}), 201
-        except Exception as email_err:
-            print(f"[AVISO] Falha no envio de e-mail: {email_err}")
-            return jsonify({"sucesso": "Agendado! (Falha no envio do e-mail de confirmação, mas seu horário está garantido)"}), 201
+        nome_barbeiro = "Fabio Farias" if barbeiro_id == 1 else "Pedro Lima"
+        email_ok = enviar_email(email, cliente, data_corte, hora_corte, nome_barbeiro)
+
+        if email_ok:
+            return jsonify({"sucesso": f"¡Agendado! Confirmación enviada a {email}"}), 201
+        else:
+            return jsonify({"sucesso": "¡Agendado! (Email no enviado)"}), 201
 
     except Exception as e:
         return jsonify({"erro": f"Error: {str(e)}"}), 500
-
 
 @app.route('/agenda/<barbeiro>')
 def agenda(barbeiro):
@@ -147,28 +152,15 @@ def agenda(barbeiro):
 
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute(
-        'SELECT data, hora, nome_cliente FROM reservas WHERE barbeiro_id = ? ORDER BY data, hora',
-        (bid,)
-    )
+    c.execute('SELECT data, hora, nome_cliente FROM reservas WHERE barbeiro_id = ? ORDER BY data, hora', (bid,))
     reservas = c.fetchall()
     conn.close()
 
-    html = (
-        f"<html><head><title>Agenda</title>"
-        f"<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'></head>"
-        f"<body><div class='container p-4'><h1>{nome}</h1>"
-        f"<a href='/' class='btn btn-secondary'>Volver</a><div class='row mt-3'>"
-    )
-    for data, hora, cliente in reservas:
-        html += (
-            f"<div class='col-md-3 mb-2'><div class='card bg-success text-white p-3'>"
-            f"<strong>{hora}</strong><br>{cliente}<br>{data}</div></div>"
-        )
-    html += "</div></div></body></html>"
-    return html
+    return render_template("agenda.html", nome=nome, reservas=reservas)
 
+# ✅ IMPORTANTE: init_db fora do if __name__
+init_db()
 
 if __name__ == '__main__':
-    print("Barbearia iniciada")
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
