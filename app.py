@@ -16,6 +16,7 @@ BARBEARIA_NOME = "Barbearia Club 13"
 JANELA_DIAS = 7
 HORARIO_ABERTURA = 8
 HORARIO_FECHAMENTO = 21
+
 SMTP_HOST = os.environ.get("SMTP_HOST", "barbeariaclub298@gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER")
@@ -60,7 +61,7 @@ def enviar_email_confirmacao(destinatario, cliente, data_corte, hora_corte, barb
     msg["From"] = SMTP_USER
     msg["To"] = destinatario
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
         recusados = server.sendmail(SMTP_USER, [destinatario], msg.as_string())
@@ -157,30 +158,52 @@ def agenda(barbeiro):
     else:
         return "No encontrado", 404
 
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute(
-        'SELECT data, hora, nome_cliente FROM reservas WHERE barbeiro_id = ? ORDER BY data, hora',
-        (bid,)
-    )
-    reservas = c.fetchall()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute(
+            'SELECT data, hora, nome_cliente FROM reservas WHERE barbeiro_id = ? ORDER BY data, hora',
+            (bid,)
+        )
+        reservas = c.fetchall()
+        conn.close()
 
-    hoje = datetime.now().date().isoformat()
-    dias = {}
-    for data, hora, cliente in reservas:
-        dias.setdefault(data, []).append({"hora": hora, "cliente": cliente})
+        hoje = datetime.now().date().isoformat()
+        dias = {}
+        for data, hora, cliente in reservas:
+            dias.setdefault(data, []).append({"hora": hora, "cliente": cliente})
 
-    agenda_por_dia = [
-        {
-            "data_extenso": formatar_data_extenso(data),
-            "hoje": data == hoje,
-            "horarios": horarios
-        }
-        for data, horarios in dias.items()
-    ]
+        agenda_por_dia = []
+        for data, horarios in dias.items():
+            try:
+                data_extenso = formatar_data_extenso(data)
+            except ValueError:
+                data_extenso = data  # formato inesperado: mostra a data crua em vez de quebrar a pagina inteira
+            agenda_por_dia.append({
+                "data_extenso": data_extenso,
+                "hoje": data == hoje,
+                "horarios": horarios
+            })
 
-    return render_template('agenda.html', nome=nome, agenda_por_dia=agenda_por_dia, total=len(reservas))
+        return render_template('agenda.html', nome=nome, agenda_por_dia=agenda_por_dia, total=len(reservas))
+
+    except Exception as e:
+        print(f"[ERRO] Falha ao carregar agenda de {nome}: {type(e).__name__}: {e}")
+        return (
+            f"<h1>Erro ao carregar a agenda</h1>"
+            f"<p><strong>{type(e).__name__}</strong>: verifique o log do servidor no Render para o detalhe completo.</p>"
+            f"<p>Causa mais provável: <code>templates/agenda.html</code> nao chegou no deploy.</p>"
+            f"<a href='/'>Voltar</a>"
+        ), 500
+
+
+@app.route('/versao')
+def versao():
+    return jsonify({
+        "versao": "2026-07-12-v3",
+        "agenda_com_tratamento_erro": True,
+        "email_com_log_detalhado": True
+    })
 
 
 if __name__ == '__main__':

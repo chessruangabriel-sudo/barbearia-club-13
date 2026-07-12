@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de {{ nome }} - Barbearia Club 13</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1c2530;
+            --cream: #f6f1e7;
+            --card: #ffffff;
+            --brass: #b8863b;
+            --muted: #7d7466;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--cream);
+            font-family: 'Inter', sans-serif;
+            color: var(--ink);
+            margin: 0;
+            padding: 48px 16px 64px;
+        }
+        a { text-decoration: none; }
+        :focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+
+        .topo { max-width: 560px; margin: 0 auto; }
+        .eyebrow {
+            font-size: 0.7rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .nome-barbeiro {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.8rem;
+            letter-spacing: 0.02em;
+            color: var(--ink);
+            margin: 0 0 4px;
+            line-height: 1;
+        }
+        .resumo { color: var(--muted); font-size: 0.92rem; margin-bottom: 18px; }
+
+        .btn-voltar {
+            background-color: var(--ink);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 9px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            transition: background-color 0.18s ease;
+        }
+        .btn-voltar:hover { background-color: var(--brass); }
+
+        .stripe {
+            max-width: 560px;
+            height: 6px;
+            margin: 24px auto 32px;
+            border-radius: 3px;
+            background: repeating-linear-gradient(
+                -45deg,
+                var(--ink) 0px, var(--ink) 7px,
+                var(--brass) 7px, var(--brass) 14px,
+                var(--cream) 14px, var(--cream) 21px
+            );
+        }
+        .stripe-dia { height: 4px; margin: 6px auto 28px; opacity: 0.85; }
+
+        .agenda { max-width: 560px; margin: 0 auto; }
+        .cabecalho-dia { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .badge-hoje {
+            background-color: var(--brass);
+            color: var(--ink);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 4px 10px;
+            border-radius: 100px;
+            text-transform: uppercase;
+        }
+        .data-extenso {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.02em;
+            color: var(--ink);
+        }
+        .ledger {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(28,37,48,0.08);
+            overflow: hidden;
+        }
+        .linha-horario {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            border-bottom: 1px solid #eee6d8;
+            transition: background-color 0.15s ease;
+        }
+        .linha-horario:last-child { border-bottom: none; }
+        .linha-horario:hover { background-color: #fbf8f2; }
+        .hora {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+            width: 56px;
+            flex-shrink: 0;
+            border-left: 3px solid var(--brass);
+            padding-left: 12px;
+        }
+        .cliente { color: var(--ink); font-weight: 500; }
+
+        .vazio {
+            max-width: 560px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 12px;
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--muted);
+            box-shadow: 0 6px 20px rgba(28,37,48,0.08);
+        }
+        .vazio .icone { font-size: 2rem; margin-bottom: 10px; display: block; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-voltar, .linha-horario { transition: none; }
+        }
+        @media (max-width: 420px) {
+            .nome-barbeiro { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topo">
+    <div class="eyebrow">🪒 Barbearia Club 13</div>
+    <h1 class="nome-barbeiro">{{ nome }}</h1>
+    <div class="resumo">
+        {% if total == 0 %}Nenhum agendamento nos próximos dias
+        {% elif total == 1 %}1 agendamento
+        {% else %}{{ total }} agendamentos{% endif %}
+    </div>
+    <a href="/" class="btn-voltar">← Voltar</a>
+</div>
+
+<div class="stripe"></div>
+
+{% if agenda_por_dia %}
+<div class="agenda">
+    {% for dia in agenda_por_dia %}
+    <div class="cabecalho-dia">
+        {% if dia.hoje %}<span class="badge-hoje">Hoje</span>{% endif %}
+        <span class="data-extenso">{{ dia.data_extenso }}</span>
+    </div>
+    <div class="ledger">
+        {% for item in dia.horarios %}
+        <div class="linha-horario">
+            <span class="hora">{{ item.hora }}</span>
+            <span class="cliente">{{ item.cliente }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% if not loop.last %}<div class="stripe stripe-dia"></div>{% endif %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="vazio">
+    <span class="icone">🪒</span>
+    Nenhum agendamento nos próximos dias.
+</div>
+{% endif %}
+
+</body>
+</html>
