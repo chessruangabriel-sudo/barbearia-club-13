@@ -1,189 +1,308 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barbearia Club 13</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
-    .hero { background: linear-gradient(120deg, #1f2a44, #2c3e50); color: white; padding: 40px; border-radius: 16px; }
-    .card { border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-    .btn-primary { background: #1f2a44; border: none; }
-    .btn-primary:hover { background: #2c3e50; }
-    .rules-info { font-size: 0.9rem; background: #eef2f7; padding: 12px; border-radius: 12px; }
-    .footer { text-align: center; color: #666; font-size: 0.85rem; margin-top: 30px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento - Barbearia Club 13</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1c2530;
+            --cream: #f6f1e7;
+            --card: #ffffff;
+            --brass: #b8863b;
+            --muted: #7d7466;
+            --danger: #a13d3d;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--cream);
+            font-family: 'Inter', sans-serif;
+            color: var(--ink);
+            padding: 56px 16px 60px;
+            margin: 0;
+        }
+
+        .brand { max-width: 440px; margin: 0 auto; text-align: center; }
+        .brand .eyebrow {
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .brand h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.6rem;
+            letter-spacing: 0.03em;
+            color: var(--ink);
+            margin: 0 0 6px;
+            line-height: 1;
+        }
+        .brand p { color: var(--muted); font-size: 0.95rem; margin: 0; }
+
+        .stripe {
+            max-width: 440px;
+            height: 6px;
+            margin: 24px auto 28px;
+            border-radius: 3px;
+            background: repeating-linear-gradient(
+                -45deg,
+                var(--ink) 0px, var(--ink) 7px,
+                var(--brass) 7px, var(--brass) 14px,
+                var(--cream) 14px, var(--cream) 21px
+            );
+        }
+
+        .card {
+            max-width: 440px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(28,37,48,0.10);
+            border: none;
+            padding: 32px 28px;
+        }
+
+        .rules-info {
+            background: var(--cream);
+            border-radius: 10px;
+            padding: 16px 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px 22px;
+            margin-bottom: 26px;
+        }
+        .rules-info .item { flex: 1 1 110px; }
+        .rules-info .label {
+            font-size: 0.64rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+        .rules-info .value { font-weight: 600; color: var(--ink); font-size: 0.88rem; }
+        .rules-info .nota {
+            flex-basis: 100%;
+            font-size: 0.8rem;
+            color: var(--danger);
+            padding-top: 10px;
+            border-top: 1px solid rgba(28,37,48,0.08);
+        }
+
+        .form-label { font-weight: 600; font-size: 0.82rem; color: var(--ink); }
+
+        .form-control, .form-select {
+            border: 1.5px solid #e4ddd0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: 'Inter', sans-serif;
+            color: var(--ink);
+            background-color: #fdfbf7;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--brass);
+            box-shadow: 0 0 0 3px rgba(184,134,59,0.18);
+        }
+        .form-text { color: var(--muted); font-size: 0.78rem; }
+
+        .btn-primary {
+            background-color: var(--ink);
+            border: none;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            border-radius: 9px;
+            transition: background-color 0.18s ease, transform 0.18s ease;
+        }
+        .btn-primary:hover { background-color: var(--brass); transform: translateY(-1px); }
+        .btn-primary:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+
+        .footer { margin-top: 26px; text-align: center; font-size: 0.78rem; color: var(--muted); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-primary { transition: none; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container py-5">
-  <div class="hero mb-4 text-center">
-    <h1 class="fw-bold">🪒 Barbearia Club 13</h1>
-    <p class="mb-0">Agende seu corte em segundos</p>
-  </div>
+<div class="brand">
+    <div class="eyebrow">🪒 Agendamento Online</div>
+    <h1>Barbearia Club 13</h1>
+    <p>Agende seu corte com Fábio e Pedro</p>
+</div>
 
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card p-4">
-        <div class="rules-info mb-3">
-          <strong>⚠️ Regras do Sistema:</strong><br>
-          • Seg-Sáb: 08:00 - 21:00<br>
-          • Almoço: 11:30 - 12:30<br>
-          • Intervalo: a cada 30 min<br>
-          • Janela: próximos 7 dias<br>
-          • Domingo: fechado
+<div class="stripe"></div>
+
+<div class="card">
+    <div class="rules-info">
+        <div class="item">
+            <div class="label">Horário</div>
+            <div class="value">Seg–Sáb, 08:00–21:00</div>
+        </div>
+        <div class="item">
+            <div class="label">Almoço</div>
+            <div class="value">11:30–12:30 fechado</div>
+        </div>
+        <div class="item">
+            <div class="label">Janela</div>
+            <div class="value">7 dias à frente</div>
+        </div>
+        <div class="nota">⚠️ Domingo: barbearia fechada</div>
+    </div>
+
+    <form id="agendamentoForm">
+        <div class="mb-3">
+            <label for="barbeiro" class="form-label">Escolha o Barbeiro:</label>
+            <select class="form-select" id="barbeiro" required>
+                <option value="" selected disabled>-- Selecione --</option>
+                <option value="1">Fábio Farias</option>
+                <option value="2">Pedro Lima</option>
+            </select>
         </div>
 
-        <form id="agendamentoForm">
-          <div class="mb-3">
-            <label class="form-label fw-bold">Barbeiro:</label>
-            <select class="form-select" id="barbeiro" required>
-              <option value="" disabled selected>-- Selecione --</option>
-              <option value="1">Fábio Farias</option>
-              <option value="2">Pedro Lima</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-bold">Data:</label>
+        <div class="mb-3">
+            <label for="data" class="form-label">Data do Corte:</label>
             <input type="date" class="form-control" id="data" required>
-          </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Horário:</label>
+        <div class="mb-3">
+            <label for="hora" class="form-label">Horário Disponível:</label>
             <select class="form-select" id="hora" required disabled>
-              <option value="">Selecione a data primeiro</option>
+                <option value="">Selecione a data primeiro</option>
             </select>
-          </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Nome completo:</label>
-            <input type="text" class="form-control" id="cliente" required>
-          </div>
+        <div class="mb-3">
+            <label for="cliente" class="form-label">Seu Nome Completo:</label>
+            <input type="text" class="form-control" id="cliente" placeholder="Ex: Mr. Oliveira" required>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">E-mail:</label>
-            <input type="email" class="form-control" id="email" required>
-          </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Seu E-mail (Obrigatório):</label>
+            <input type="email" class="form-control" id="email" placeholder="seu@email.com" required>
+            <div class="form-text">Enviamos a confirmação e comprovante para este e-mail.</div>
+        </div>
 
-          <button type="submit" class="btn btn-primary w-100">Confirmar Agendamento</button>
-        </form>
+        <button type="submit" class="btn btn-primary btn-lg w-100 py-2">Confirmar Agendamento</button>
+    </form>
 
-        <div id="mensagem" class="mt-3 fw-bold text-center"></div>
-      </div>
-    </div>
-  </div>
+    <div id="mensagem" class="mt-3 text-center fw-bold" style="min-height: 24px;"></div>
+</div>
 
-  <div class="footer">&copy; 2026 Barbearia Club 13</div>
+<div class="footer">
+    &copy; 2026 Barbearia Club 13. Sistema v2.0
 </div>
 
 <script>
-  const inputData = document.getElementById('data');
-  const selectHora = document.getElementById('hora');
-  const form = document.getElementById('agendamentoForm');
-  const msgDiv = document.getElementById('mensagem');
-  const btnSubmit = form.querySelector('button[type="submit"]');
+    const inputData = document.getElementById('data');
+    const selectHora = document.getElementById('hora');
+    const form = document.getElementById('agendamentoForm');
+    const msgDiv = document.getElementById('mensagem');
+    const btnSubmit = form.querySelector('button[type="submit"]');
 
-  const hoje = new Date().toISOString().split('T')[0];
-  inputData.setAttribute('min', hoje);
+    const hoje = new Date().toISOString().split('T')[0];
+    inputData.setAttribute('min', hoje);
 
-  function gerarHorarios() {
-    selectHora.innerHTML = '<option value="" selected>-- Selecione --</option>';
-    const dataSelecionada = new Date(inputData.value + 'T00:00:00');
-    const diaSemana = dataSelecionada.getDay();
+    function gerarHorarios() {
+        selectHora.innerHTML = '<option value="" selected>-- Selecione --</option>';
+        const dataSelecionada = new Date(inputData.value + 'T00:00:00');
+        const diaSemana = dataSelecionada.getDay();
 
-    if (diaSemana === 0) {
-      const opcao = document.createElement('option');
-      opcao.text = "Domingo: Barbearia Fechada";
-      opcao.disabled = true;
-      selectHora.add(opcao);
-      selectHora.disabled = true;
-      return;
+        if (diaSemana === 0) {
+            const opcao = document.createElement('option');
+            opcao.text = "Domingo: Barbearia Fechada";
+            opcao.disabled = true;
+            selectHora.add(opcao);
+            selectHora.disabled = true;
+            return;
+        }
+
+        const hojeObj = new Date();
+        hojeObj.setHours(0,0,0,0);
+        const dataObj = new Date(inputData.value + 'T00:00:00');
+        const diffTime = Math.abs(dataObj - hojeObj);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+        if (diffDays > 7) {
+            const opcao = document.createElement('option');
+            opcao.text = "Data fora da janela (Máx 7 dias)";
+            opcao.disabled = true;
+            selectHora.add(opcao);
+            selectHora.disabled = true;
+            msgDiv.textContent = "⚠️ Você pode agendar apenas para os próximos 7 dias.";
+            msgDiv.className = "mt-2 text-center fw-bold text-warning";
+            return;
+        } else {
+            msgDiv.textContent = "";
+        }
+
+        selectHora.disabled = false;
+
+        for (let h = 8; h < 21; h++) {
+            const minutos = [0, 30];
+            minutos.forEach(m => {
+                const horaFormatada = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                const horaFloat = h + (m / 60);
+
+                if (horaFloat >= 11.5 && horaFloat <= 12.5) return;
+
+                const opcao = document.createElement('option');
+                opcao.value = horaFormatada;
+                opcao.text = horaFormatada;
+                selectHora.add(opcao);
+            });
+        }
     }
 
-    const hojeObj = new Date();
-    hojeObj.setHours(0,0,0,0);
-    const dataObj = new Date(inputData.value + 'T00:00:00');
-    const diffTime = Math.abs(dataObj - hojeObj);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    inputData.addEventListener('change', gerarHorarios);
 
-    if (diffDays > 7) {
-      const opcao = document.createElement('option');
-      opcao.text = "Data fora da janela (Máx 7 dias)";
-      opcao.disabled = true;
-      selectHora.add(opcao);
-      selectHora.disabled = true;
-      msgDiv.textContent = "⚠️ Você pode agendar apenas para os próximos 7 dias.";
-      msgDiv.className = "mt-2 text-center fw-bold text-warning";
-      return;
-    } else {
-      msgDiv.textContent = "";
-    }
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Processando...";
+        msgDiv.textContent = "";
 
-    selectHora.disabled = false;
+        const dados = {
+            barbeiro_id: parseInt(document.getElementById('barbeiro').value),
+            data: inputData.value,
+            hora: selectHora.value,
+            cliente: document.getElementById('cliente').value,
+            email: document.getElementById('email').value
+        };
 
-    for (let h = 8; h < 21; h++) {
-      const minutos = [0, 30];
-      minutos.forEach(m => {
-        const horaFormatada = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        const horaFloat = h + (m / 60);
+        try {
+            const resposta = await fetch('/agendar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
 
-        if (horaFloat >= 11.5 && horaFloat <= 12.5) return;
+            const resultado = await resposta.json();
 
-        const opcao = document.createElement('option');
-        opcao.value = horaFormatada;
-        opcao.text = horaFormatada;
-        selectHora.add(opcao);
-      });
-    }
-  }
-
-  inputData.addEventListener('change', gerarHorarios);
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    btnSubmit.disabled = true;
-    btnSubmit.textContent = "Processando...";
-    msgDiv.textContent = "";
-
-    const dados = {
-      barbeiro_id: parseInt(document.getElementById('barbeiro').value),
-      data: inputData.value,
-      hora: selectHora.value,
-      cliente: document.getElementById('cliente').value,
-      email: document.getElementById('email').value
-    };
-
-    try {
-      const resposta = await fetch('/agendar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-      });
-
-      const resultado = await resposta.json();
-
-      if (resposta.ok) {
-        msgDiv.textContent = "✅ " + resultado.sucesso;
-        msgDiv.className = "mt-3 text-center fw-bold text-success";
-        form.reset();
-        selectHora.innerHTML = '<option value="">Selecione a data primeiro</option>';
-        selectHora.disabled = true;
-      } else {
-        msgDiv.textContent = "❌ " + resultado.erro;
-        msgDiv.className = "mt-3 text-center fw-bold text-danger";
-      }
-    } catch (erro) {
-      msgDiv.textContent = "❌ Erro de conexão com o servidor.";
-      msgDiv.className = "mt-3 text-center fw-bold text-danger";
-      console.error(erro);
-    } finally {
-      btnSubmit.disabled = false;
-      btnSubmit.textContent = "Confirmar Agendamento";
-    }
-  });
+            if (resposta.ok) {
+                msgDiv.textContent = "✅ " + resultado.sucesso;
+                msgDiv.className = "mt-3 text-center fw-bold text-success";
+                form.reset();
+                selectHora.innerHTML = '<option value="">Selecione a data primeiro</option>';
+                selectHora.disabled = true;
+            } else {
+                msgDiv.textContent = "❌ " + resultado.erro;
+                msgDiv.className = "mt-3 text-center fw-bold text-danger";
+            }
+        } catch (erro) {
+            msgDiv.textContent = "❌ Erro de conexão com o servidor.";
+            msgDiv.className = "mt-3 text-center fw-bold text-danger";
+            console.error(erro);
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = "Confirmar Agendamento";
+        }
+    });
 </script>
 
 </body>
