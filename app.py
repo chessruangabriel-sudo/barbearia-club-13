@@ -17,10 +17,11 @@ JANELA_DIAS = 7
 HORARIO_ABERTURA = 8
 HORARIO_FECHAMENTO = 21
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "barbeariaclub298@gmail.com")
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp-relay.brevo.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER")
 SMTP_PASS = os.environ.get("SMTP_PASS")
+SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER)  # endereco que aparece como remetente; na Brevo pode ser diferente do login
 
 BARBEIROS = {1: "Fabio Farias", 2: "Pedro Lima"}
 
@@ -58,13 +59,13 @@ def enviar_email_confirmacao(destinatario, cliente, data_corte, hora_corte, barb
     )
     msg = MIMEText(corpo, _charset="utf-8")
     msg["Subject"] = Header(f"Confirmação de Agendamento - {BARBEARIA_NOME}", "utf-8")
-    msg["From"] = SMTP_USER
+    msg["From"] = SMTP_FROM
     msg["To"] = destinatario
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
-        recusados = server.sendmail(SMTP_USER, [destinatario], msg.as_string())
+        recusados = server.sendmail(SMTP_FROM, [destinatario], msg.as_string())
         if recusados:
             raise smtplib.SMTPRecipientsRefused(recusados)
 
@@ -200,9 +201,9 @@ def agenda(barbeiro):
 @app.route('/versao')
 def versao():
     return jsonify({
-        "versao": "2026-07-12-v3",
-        "agenda_com_tratamento_erro": True,
-        "email_com_log_detalhado": True
+        "versao": "2026-07-12-v4-brevo",
+        "smtp_host_padrao": SMTP_HOST,
+        "agenda_com_tratamento_erro": True
     })
 
 
