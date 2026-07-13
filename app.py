@@ -19,8 +19,8 @@ HORARIO_FECHAMENTO = 21
 
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp-relay.brevo.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("SMTP_USER")
-SMTP_PASS = os.environ.get("SMTP_PASS")
+SMTP_USER = os.environ.get("b1c1ca001@smtp-brevo.com")
+SMTP_PASS = os.environ.get("SMPT_PASS")
 SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER)  # endereco que aparece como remetente; na Brevo pode ser diferente do login
 
 BARBEIROS = {1: "Fabio Farias", 2: "Pedro Lima"}
